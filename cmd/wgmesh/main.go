@@ -28,7 +28,7 @@ func main() {
 		genCmd := flag.NewFlagSet("generate", flag.ExitOnError)
 		configPath := genCmd.String("config", "mesh.yaml", "Mesh definition yaml")
 		outDir := genCmd.String("out", "configs", "Output directory for wg0.conf files")
-		genCmd.Parse(os.Args[2:])
+		_ = genCmd.Parse(os.Args[2:])
 
 		m, err := mesh.LoadMeshConfig(*configPath)
 		if err != nil {

@@ -7,9 +7,33 @@ import (
 	"strings"
 )
 
+func validateNodeName(name string) error {
+	if name == "" || name == "." || name == ".." {
+		return fmt.Errorf("invalid node name %q", name)
+	}
+	if strings.ContainsAny(name, `/\`) || strings.Contains(name, "..") {
+		return fmt.Errorf("node name %q contains disallowed path characters", name)
+	}
+	if filepath.Base(name) != name {
+		return fmt.Errorf("node name %q must be a single path segment", name)
+	}
+	return nil
+}
+
 func GenerateMeshConfigs(mesh *MeshConfig, outDir string) error {
 	if err := os.MkdirAll(outDir, 0755); err != nil {
 		return err
+	}
+
+	seen := make(map[string]struct{}, len(mesh.Nodes))
+	for _, node := range mesh.Nodes {
+		if err := validateNodeName(node.Name); err != nil {
+			return err
+		}
+		if _, dup := seen[node.Name]; dup {
+			return fmt.Errorf("duplicate node name %q", node.Name)
+		}
+		seen[node.Name] = struct{}{}
 	}
 
 	for _, localNode := range mesh.Nodes {
